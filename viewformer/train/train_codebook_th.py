@@ -38,7 +38,7 @@ def main(
         logger = pl.loggers.TensorBoardLogger(save_dir=job_dir, log_graph=log_graph)
     kwargs = dict(num_nodes=num_nodes)
     if num_gpus > 0:
-        kwargs.update(dict(gpus=num_gpus, accelerator='ddp'))
+        kwargs.update(dict(gpus=num_gpus, accelerator='dp'))
 
     # Split training to #epochs epochs
     limit_train_batches = 1 + total_steps // epochs

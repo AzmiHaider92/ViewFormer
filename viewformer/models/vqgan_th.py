@@ -425,11 +425,11 @@ class VQGAN(pl.LightningModule):
         xrec, qloss, *_ = self(x)
         aeloss, log_dict_ae = self._compute_loss(qloss, x, xrec, split="val")
 
-        rec_loss = log_dict_ae["val/rec_loss"]
-        self.log("val/rec_loss", rec_loss,
-                 prog_bar=True, logger=True, on_step=True, on_epoch=True, sync_dist=True)
-        self.log("val/aeloss", aeloss,
-                 prog_bar=True, logger=True, on_step=True, on_epoch=True, sync_dist=True)
+        #rec_loss = log_dict_ae["val/rec_loss"]
+        #self.log("val/rec_loss", rec_loss,
+        #         prog_bar=True, logger=True, on_step=True, on_epoch=True, sync_dist=True)
+        #self.log("val/aeloss", aeloss,
+        #         prog_bar=True, logger=True, on_step=True, on_epoch=True, sync_dist=True)
         self.log_dict(log_dict_ae)
 
         result = dict()

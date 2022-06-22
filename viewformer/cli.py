@@ -1,5 +1,7 @@
 from aparse import click
 from viewformer.utils.click import LazyGroup
+import torch
+torch.cuda.empty_cache()
 
 
 @click.group(cls=LazyGroup)
