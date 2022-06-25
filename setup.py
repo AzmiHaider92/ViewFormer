@@ -2,8 +2,12 @@
 import os
 from setuptools import setup, find_packages
 
-requirements = '''tensorflow-addons>=0.12.1
-tensorflow>=2.4.1
+requirements = '''
+torch==1.11.0
+torchvision==0.12.0
+pytorch_lightning==1.1.2
+tensorflow-addons==0.17.0
+tensorflow==2.9.1
 fsspec>=0.8.5
 webdataset==0.1.40
 colorlog>=4.4.0
@@ -11,8 +15,8 @@ wandb>=0.10.8
 pytest>=6.1.2
 pytest-benchmark>=3.2.3
 lpips==0.1.3
-onnx_tf==1.7.0
-onnx==1.7.0
+onnx_tf==1.8.0
+onnx==1.12.0
 einops>=0.3.2
 tqdm>=4.45.0
 aparse==0.0.14

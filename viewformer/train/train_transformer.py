@@ -1,4 +1,3 @@
-#!/bin/env python
 from aparse import click, ConditionalType, WithArgumentName, AllArguments
 import os
 import json
