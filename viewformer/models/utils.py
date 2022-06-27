@@ -300,9 +300,9 @@ def lpips(net='vgg'):
     def call(image_0, image_1):
         image_0 = tf.transpose(image_0, [0, 3, 1, 2])
         image_1 = tf.transpose(image_1, [0, 3, 1, 2])
-        #image_0 = tf.TensorSpec.from_tensor(image_0)
-        #image_1 = tf.TensorSpec.from_tensor(image_1)
-        output = model(**{'0': image_0, '1': image_1})
+        image_0 = tf.TensorSpec.from_tensor(image_0, name='onnx_tf__tf_Sub_0_0c7a960d')
+        image_1 = tf.TensorSpec.from_tensor(image_1, name='onnx_tf__tf_Sub_1_09644e05')
+        output = model(**{'onnx::Sub_0': image_0, 'onnx::Sub_1': image_1})
         if isinstance(output, dict):
             output = next(iter(output.values()))
         return tf.reshape(output, [-1])
