@@ -78,13 +78,14 @@ def main(codebook_model: str,
          fp16: bool = False,
          wandb: bool = False,
          epochs: int = 100,
-         n_embeddings=None):
+         n_embeddings=None,
+         wandb_exp_name: str = None):
     assert n_embeddings is None
     distributed_strategy = get_strategy(ddp, tpu)
     if wandb:
         import wandb
         hparams = {k: v for k, v in args.items() if not k.startswith('wandb_')}
-        wandb.init(config=hparams, resume='allow')
+        wandb.init(config=hparams, resume='allow', name=wandb_exp_name)
         wandb.tensorboard.patch(root_logdir=job_dir)
 
     validation_steps = max(1, min((total_steps // epochs) // 10, 100))
