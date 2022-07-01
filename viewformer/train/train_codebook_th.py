@@ -29,11 +29,12 @@ def main(
         resume_from_checkpoint: str = None,
         accumulate_grad_batches: int = 1,
         fp16: bool = False,
-        wandb: bool = False):
+        wandb: bool = False,
+        wandb_exp_name: str = None):
     datamodule.transform = transform_image
 
     if wandb:
-        logger = logging_utils.WandbLogger(log_graph=log_graph)
+        logger = logging_utils.WandbLogger(log_graph=log_graph, name=wandb_exp_name)
     else:
         logger = pl.loggers.TensorBoardLogger(save_dir=job_dir, log_graph=log_graph)
     kwargs = dict(num_nodes=num_nodes)
