@@ -287,18 +287,19 @@ class LPIPSMetric(tf.keras.metrics.Mean):
 
     def __init__(self, net='vgg', name=None, **kwargs):
         #from viewformer.models.utils import lpips
-        import lpips
-        if name is None:
-            name = f'lpips-{net}'
-        super().__init__(name=name, **kwargs)
-        if net not in self._lpips_pool:
-            self._lpips_pool[net] = lpips.LPIPS(net)
-        self.lpips = self._lpips_pool[net]
+        #import lpips
+        self.net = net
+        #if name is None:
+        #    name = f'lpips-{net}'
+        #super().__init__(name=name, **kwargs)
+        #if net not in self._lpips_pool:
+        #    self._lpips_pool[net] = lpips.LPIPS(net)
+        #self.lpips = self._lpips_pool[net]
     
     @tf.function
     def update_state(self, gt_images, images):
         gt_images = tf.image.convert_image_dtype(gt_images, 'float32')
         images = tf.image.convert_image_dtype(images, 'float32')
-        val = lpips_tf(input0=gt_images,input1=images, net='vgg')
+        val = lpips_tf(input0=gt_images,input1=images, net=self.net)
         print(val)
         super().update_state(val)
