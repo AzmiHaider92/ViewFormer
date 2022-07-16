@@ -3,11 +3,10 @@
 Hello. 
 This is an edit of the ViewFormer paper: https://github.com/jkulhanek/viewformer
 
-To install requirment, just run the following command:
-pip install -e .
+- To install requirment, just run the following command: pip install -e .
 
 
-- codebook and transformer were trained with the parameters given by the original project and achieved the following results.
+-codebook and transformer were trained with the parameters given by the original project and achieved the following results.
 
 Codebook training
 |         |    mse    |   rmse   |     mae   |    psnr   |   lpips   |   ssim   |
@@ -21,3 +20,6 @@ Transformer training:
 | ------- | ----------- | ------------- | --------- | ------------ | ---------- | -------- | --------- | --------- | --------- | -------- |
 | paper   |  0.083059   |   0.067267    | 0.253630  |   0.210964   | 74.843483  | 8.186931 | 2.187041  | 30.247765 | 0.050506  | 0.949935 |
 | trained |  0.186236   |   0.128448    | 0.496741  |   0.385123   | 105.547150 | 9.564821 | 2.301619  | 29.034624 | 0.041288  | 0.957995 |  
+
+
+
