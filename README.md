@@ -7,6 +7,8 @@ To install requirment, just run the following command:
 pip install -e .
 
 
+- codebook and transformer were trained with the parameters given by the original project and achieved the following results.
+
 Codebook training
 |         |    mse    |   rmse   |     mae   |    psnr   |   lpips   |   ssim   |
 | ------- | --------- | -------- | --------- | --------- | --------- | ---------|
