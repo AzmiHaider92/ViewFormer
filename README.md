@@ -2,11 +2,11 @@
 
 Hello. 
 This is an edit of the ViewFormer paper: https://github.com/jkulhanek/viewformer
-
+The project has newer libraries' versions 
 - To install requirment, just run the following command: pip install -e .
 
 
--codebook and transformer were trained with the parameters given by the original project and achieved the following results.
+Codebook and Transformer were trained with the parameters specified by the original project and achieved the following results:
 
 Codebook training
 |         |    mse    |   rmse   |     mae   |    psnr   |   lpips   |   ssim   |
