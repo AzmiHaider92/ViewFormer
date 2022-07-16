@@ -13,16 +13,7 @@ Codebook training
 | paper     | 40.111782 | 6.122104 | 1.783276  | 32.679970 | 0.033483  | 0.962444 |
 | trained   | 41.745335 | 6.111624 | 1.500933  | 32.927101 | 0.027030  | 0.973110 |
 
-loc-angle: 0.186236
-    loc-dist: 0.496741
-    loc-angle-med: 0.128448
-    loc-dist-med: 0.385123
-    mse: 105.547150
-    rmse: 9.564821
-    mae: 2.301619
-    psnr: 29.034624
-    lpips: 0.041288
-    ssim: 0.957995
+
 Transformer training: 
 |           |  loc-angle  | loc-angle-med |  loc-dist | loc-dist-med |    mse     |   rmse   |     mae   |    psnr   |   lpips   |   ssim   |
 | --------- | ----------- | ------------- | --------- | ------------ | ---------- | -------- | --------- | --------- | --------- | -------- |
