@@ -28,7 +28,6 @@ def chain(*fx):
 
 
 def process_batch(cameras, tokens, augment, split):
-    print('Mamaaaaaaaaaa, Im here----------------------------------------------------------\n')
     xyz, quaternion = tf.split(cameras, (3, 4), axis=-1)
     if augment == 'relative':
         rotation_inverse = geometry.quaternion_conjugate(quaternion[..., :1, :])
