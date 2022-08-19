@@ -366,17 +366,19 @@ class MIGT(tf.keras.Model):
         return metrics
 
     def build(self, input_shape):
-        with tf.name_scope("wpe"):
+        #with tf.name_scope("wpe"):
             # NOTE: the shape should be dynamic and the first dimension should be the following:
             #   self.config.token_image_size ** 2
             #   Current checkpoints, however, used static size of 256. Feel free to update it if
             #   you do not need to load existing checkpoints.
+            '''
             self.wpe = self.add_weight(
                 name="embeddings",
                 #shape=[256, self.pos_embed_size],
                 shape=[self.config.token_image_size ** 2, self.pos_embed_size],
                 initializer=tf.keras.initializers.TruncatedNormal(0.02),
             )
+            '''
 
     @property
     def codebook_model(self):
