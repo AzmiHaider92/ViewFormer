@@ -28,6 +28,7 @@ def chain(*fx):
 
 
 def process_batch(cameras, tokens, augment, split):
+    print('Mamaaaaaaaaaa, Im here----------------------------------------------------------\n')
     xyz, quaternion = tf.split(cameras, (3, 4), axis=-1)
     if augment == 'relative':
         rotation_inverse = geometry.quaternion_conjugate(quaternion[..., :1, :])
@@ -101,8 +102,7 @@ def main(codebook_model: str,
         model_config.n_embeddings = codebook_model.config.n_embed
 
         if fp16:
-            from tensorflow.keras import mixed_precision
-            mixed_precision.set_global_policy('mixed_float16' if not tpu else 'mixed_bfloat16')
+            tf.keras.mixed_precision.set_global_policy('mixed_float16' if not tpu else 'mixed_bfloat16')
 
         model = AutoModel.from_config(model_config)
         model.codebook_model = codebook_model

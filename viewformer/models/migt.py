@@ -8,7 +8,7 @@ from viewformer.utils.metrics import CameraOrientationError, CameraPositionError
 from .branching_attention import compute_causal_block_multiend_attention
 from .config import MIGTConfig
 from .utils import create_optimizer
-
+import numpy as np
 
 Gelu = partial(tf.keras.layers.Activation, tf.nn.gelu)
 layer_norm_epsilon = 1e-5
@@ -102,6 +102,69 @@ def sparse_softmax_cross_entropy_with_logits(y, y_hat, label_smoothing=0.0):
     y = tf.one_hot(tf.cast(y, tf.int32), n_classes, dtype=y_hat.dtype)
     y = y * (1. - label_smoothing) + (label_smoothing / tf.cast(n_classes, y_hat.dtype))
     return tf.nn.softmax_cross_entropy_with_logits(y, y_hat)
+
+
+def get_emb(sin_inp):
+    """
+    Gets a base embedding for one dimension with sin and cos intertwined
+    """
+    emb = tf.stack((tf.sin(sin_inp), tf.cos(sin_inp)), -1)
+    emb = tf.reshape(emb, (*emb.shape[:-2], -1))
+    return emb
+
+
+class TFPositionalEncoding2D(tf.keras.layers.Layer):
+    def __init__(self, channels: int, dtype=tf.float32):
+        """
+        Args:
+            channels int: The last dimension of the tensor you want to apply pos emb to.
+        Keyword Args:
+            dtype: output type of the encodings. Default is "tf.float32".
+        """
+        super(TFPositionalEncoding2D, self).__init__()
+
+        self.channels = int(2 * np.ceil(channels / 4))
+        self.inv_freq = np.float32(
+            1
+            / np.power(
+                10000, np.arange(0, self.channels, 2) / np.float32(self.channels)
+            )
+        )
+        self.cached_penc = None
+
+    @tf.function
+    def call(self, inputs):
+        """
+        :param tensor: A 4d tensor of size (batch_size, x, y, ch)
+        :return: Positional Encoding Matrix of size (batch_size, x, y, ch)
+        """
+        if len(inputs.shape) != 4:
+            raise RuntimeError("The input tensor has to be 4d!")
+
+        if self.cached_penc is not None and self.cached_penc.shape == inputs.shape:
+            return self.cached_penc
+
+        self.cached_penc = None
+        _, x, y, org_channels = inputs.shape
+
+        dtype = self.inv_freq.dtype
+
+        pos_x = tf.range(x, dtype=dtype)
+        pos_y = tf.range(y, dtype=dtype)
+
+        sin_inp_x = tf.einsum("i,j->ij", pos_x, self.inv_freq)
+        sin_inp_y = tf.einsum("i,j->ij", pos_y, self.inv_freq)
+
+        emb_x = tf.expand_dims(get_emb(sin_inp_x), 1)
+        emb_y = tf.expand_dims(get_emb(sin_inp_y), 0)
+
+        emb_x = tf.tile(emb_x, (1, y, 1))
+        emb_y = tf.tile(emb_y, (x, 1, 1))
+        emb = tf.concat((emb_x, emb_y), -1)
+        self.cached_penc = tf.repeat(
+            emb[None, :, :, :org_channels], tf.shape(inputs)[0], axis=0
+        )
+        return self.cached_penc
 
 
 class DynamicLossWeightingCriterion(tf.keras.layers.Layer):
@@ -310,7 +373,8 @@ class MIGT(tf.keras.Model):
             #   you do not need to load existing checkpoints.
             self.wpe = self.add_weight(
                 name="embeddings",
-                shape=[256, self.pos_embed_size],
+                #shape=[256, self.pos_embed_size],
+                shape=[self.config.token_image_size ** 2, self.pos_embed_size],
                 initializer=tf.keras.initializers.TruncatedNormal(0.02),
             )
 
@@ -355,8 +419,18 @@ class MIGT(tf.keras.Model):
         pose_embeddings = tf.expand_dims(pose_embeddings, -2)
         tf.debugging.assert_type(pose_embeddings, tf.float32)
 
-        position_ids = tf.range(0, self.config.token_image_size ** 2)[tf.newaxis, tf.newaxis, :]
-        position_embeds = tf.gather(self.wpe, position_ids)
+        # position_ids: position of token in image tokens [0,1,2,3,...,token_image_size**2=64]
+        #position_ids = tf.range(0, self.config.token_image_size ** 2)[tf.newaxis, tf.newaxis, :]
+        # get each token position using trainable wpe to size d_model
+        # (1, 1, token_image_size**2) -> (1, 1, token_image_size**2, d_model)
+        #position_embeds = tf.gather(self.wpe, position_ids)
+
+        # 2d positional encoding change
+        p_enc_2d = TFPositionalEncoding2D(self.pos_embed_size)
+        position_embeds = p_enc_2d(tf.zeros((1, self.config.token_image_size, self.config.token_image_size, self.pos_embed_size)))
+        position_embeds = tf.expand_dims(position_embeds,axis=1)
+        s = tf.shape(position_embeds)
+        position_embeds = tf.reshape(position_embeds, (s[0],s[1],s[2]*s[3],s[4]))
 
         inputs_embeds = self.wte(input_ids, mode="embedding")
         pose_embeddings = tf.cast(pose_embeddings, inputs_embeds.dtype)
@@ -389,6 +463,7 @@ class MIGT(tf.keras.Model):
             localization_pose_embeds = tf.broadcast_to(localization_pose_embeds, [tf.shape(inputs_embeds)[0], loc_seq_size, tf.shape(pose_embeddings)[-2], tf.shape(localization_pose_embeds)[-1]])
             pose_embeddings = tf.concat([pose_embeddings, localization_pose_embeds], 1)
 
+        # summing image token embeddings, positional encoding embeddings and camera pose embedding
         hidden_states = [self._merge_input_embeddings(inputs_embeds, position_embeds, pose_embeddings)]
         if output_pose_embeddings is not None:
             mask_embeds = tf.reshape(self.wte(tf.constant(self.mask_token, dtype=input_ids.dtype), mode='embedding'), [1, 1, 1, -1])
@@ -400,6 +475,7 @@ class MIGT(tf.keras.Model):
             hidden_states.append(self._merge_input_embeddings(localization_embeds, position_embeds, localization_token_embeds))
             gen_poses_pointer = len(hidden_states) - 1
 
+        # transformer code:
         hidden_states = list(map(partial(self.drop, training=training), hidden_states))
         output_shape = input_shape + [shape_list(hidden_states[0])[-1]]
         for block in self.h:
